@@ -6,7 +6,9 @@ type SourceMapSegment = {
   sourceLocation: SourceLocation;
   name?: string;
 };
+
 type SourceMapLine = SourceMapSegment[];
+
 type SourceMapMappings = SourceMapLine[];
 
 class Source {

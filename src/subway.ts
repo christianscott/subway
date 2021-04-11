@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { SourceMap } from "./src/sourcemap";
+import { SourceMap } from "./sourcemap";
 
 function main() {
   const fixture = "./fixtures/a";
