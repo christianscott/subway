@@ -17,10 +17,14 @@ class Source {
 
 class SourceLocation {
   constructor(
-    private readonly line: number,
-    private readonly column: number,
-    private readonly source: Source
+    readonly line: number,
+    readonly column: number,
+    readonly source: Source
   ) {}
+
+  toString() {
+    return `${this.source.path}:${this.line}:${this.column}`;
+  }
 }
 
 export class SourceMap {
@@ -77,6 +81,21 @@ export class SourceMap {
     }
 
     return mappings;
+  }
+
+  outputLocationFor([line, column]: [line: number, column: number]):
+    | number
+    | undefined {
+    const segments = this.mappings[line];
+    if (segments == null) {
+      return;
+    }
+
+    for (const segment of segments) {
+      if (segment.sourceLocation.column === column) {
+        return segment.generatedCodeColumn;
+      }
+    }
   }
 
   static unmarshal(sourcemap: string): SourceMap {

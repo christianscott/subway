@@ -1,7 +1,7 @@
 {
   "version": 3,
-  "sources": ["../../lib/flags.js", "../index.js"],
-  "sourcesContent": ["export const flags = {\n  enabled(flag) {\n    return false;\n  },\n};\n\nexport const FLAG_A = \"FLAG_A\";\n", "import { flags, FLAG_A } from \"../lib/flags\";\n\nif (flags.enabled(FLAG_A)) {\n  console.log(\"FLAG_A is enabled!\");\n} else {\n  console.log(\"FLAG_A is disabled\");\n}\n"],
-  "mappings": "MAAO,GAAM,GAAQ,CACnB,QAAQ,EAAM,CACZ,MAAO,KAIE,EAAS,SCJtB,AAAI,EAAM,QAAQ,GAChB,QAAQ,IAAI,sBAEZ,QAAQ,IAAI",
+  "sources": ["../../lib/not_flags.js", "../../lib/flags.js", "../index.js"],
+  "sourcesContent": ["export const flags = \"flags\";\n", "export const flags = {\n  enabled(flag) {\n    return false;\n  },\n};\n\nexport const FLAG_A = \"FLAG_A\";\n", "import { flags as otherFlags } from \"../lib/not_flags\";\nimport { flags, FLAG_A } from \"../lib/flags\";\n\nif (flags.enabled(FLAG_A)) {\n  console.log(\"FLAG_A is enabled!\");\n  console.log(otherFlags);\n} else {\n  console.log(\"FLAG_A is disabled\");\n}\n"],
+  "mappings": "MAAO,GAAM,GAAQ,QCAd,GAAM,GAAQ,CACnB,QAAQ,EAAM,CACZ,MAAO,KAIE,EAAS,SCHtB,AAAI,EAAM,QAAQ,GAChB,SAAQ,IAAI,sBACZ,QAAQ,IAAI,IAEZ,QAAQ,IAAI",
   "names": []
 }
