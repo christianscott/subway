@@ -2,12 +2,15 @@ import estraverse from "estraverse";
 import type * as estree from "estree";
 import * as recast from "recast";
 
+export type FlagValue = boolean;
+export type Flags = Map<string, FlagValue>;
+
 export function removeFlagCode({
   source,
   flags,
 }: {
   source: string;
-  flags: Map<string, boolean>;
+  flags: Flags;
 }): string {
   const ast = recast.parse(source);
 
@@ -33,42 +36,14 @@ export function removeFlagCode({
   return code;
 }
 
-function visitIfStatement(
-  node: estree.IfStatement,
-  flags: Map<string, boolean>
-) {
-  if (
-    // if (f()) {...}
-    node.test.type !== "CallExpression" ||
-    // if (X.Y()) {...}
-    node.test.callee.type !== "MemberExpression" ||
-    // if (obj.Y()) {...}
-    node.test.callee.object.type !== "Identifier" ||
-    // if (obj.prop()) {...}
-    node.test.callee.property.type !== "Identifier" ||
-    // if (flags.prop()) {...}
-    node.test.callee.object.name !== "flags" ||
-    // if (flags.get()) {...}
-    node.test.callee.property.name !== "get" ||
-    // if (flags.get(?)) {...}
-    node.test.arguments.length !== 1
-  ) {
+function visitIfStatement(node: estree.IfStatement, flags: Flags) {
+  const value = maybeGetFlagValue(node.test, flags);
+  if (value == null) {
     return;
   }
 
-  const [maybeFlag] = node.test.arguments;
-  if (
-    // if (flags.get(Z)) {...}
-    maybeFlag.type !== "Identifier" ||
-    // if (flags.get(Z)) {...}
-    !flags.has(maybeFlag.name)
-  ) {
-    return;
-  }
-
-  const enabled = flags.get(maybeFlag.name)!;
   let replacement: estree.Statement;
-  if (enabled) {
+  if (value) {
     replacement = node.consequent;
   } else {
     replacement = node.alternate ?? Builders.blockStatement(); // empty block if there is no alternate
@@ -83,50 +58,47 @@ function visitIfStatement(
 
 function visitConditionalExpression(
   node: estree.ConditionalExpression,
-  flags: Map<string, boolean>
+  flags: Flags
 ) {
-  const { test } = node;
-
-  const maybeFlag = maybeGetFlagFromTest(test);
-  if (
-    maybeFlag == null ||
-    // if (flags.get(Z)) {...}
-    maybeFlag.type !== "Identifier" ||
-    // if (flags.get(Z)) {...}
-    !flags.has(maybeFlag.name)
-  ) {
+  const value = maybeGetFlagValue(node.test, flags);
+  if (value == null) {
     return;
   }
 
-  const replacement = flags.get(maybeFlag.name)!
-    ? node.consequent
-    : node.alternate;
-
+  const replacement = value ? node.consequent : node.alternate;
   return replacement;
 }
 
-function maybeGetFlagFromTest(node: estree.Expression) {
+function maybeGetFlagValue(node: estree.Expression, flags: Flags) {
   if (
-    // if (f()) {...}
+    // f()
     node.type !== "CallExpression" ||
-    // if (X.Y()) {...}
+    // X.Y()
     node.callee.type !== "MemberExpression" ||
-    // if (obj.Y()) {...}
+    // obj.Y()
     node.callee.object.type !== "Identifier" ||
-    // if (obj.prop()) {...}
+    // obj.prop()
     node.callee.property.type !== "Identifier" ||
-    // if (flags.prop()) {...}
+    // flags.prop()
     node.callee.object.name !== "flags" ||
-    // if (flags.get()) {...}
+    // flags.get()
     node.callee.property.name !== "get" ||
-    // if (flags.get(?)) {...}
+    // flags.get(?)
     node.arguments.length !== 1
   ) {
     return;
   }
 
   const [maybeFlag] = node.arguments;
-  return maybeFlag;
+  if (
+    maybeFlag == null ||
+    // flags.get(SOME_FLAG)
+    maybeFlag.type !== "Identifier"
+  ) {
+    return;
+  }
+
+  return flags.get(maybeFlag.name);
 }
 
 const Builders = {
