@@ -2,5 +2,6 @@ import { foo } from "./foo.tests";
 import { removeFlagCodeTests } from "./remove_flag_code.tests";
 
 !(async function () {
-  await Promise.all([removeFlagCodeTests(), foo()]);
+  await foo();
+  await removeFlagCodeTests();
 })();
