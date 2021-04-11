@@ -20,5 +20,5 @@ jobs:
         with:
           node-version: 14.x
       - run: npm ci
-      - run: make test
       - run: make check-fixtures
+      - run: make test
