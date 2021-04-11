@@ -5,6 +5,8 @@ ESBUILD=$(NODE_MODULES_BIN)/esbuild
 SOURCES=$(wildcard src/**/*.ts)
 
 OUTDIR=dist
+TESTDIR=src/tests
+FIXTURESDIR=$(TESTDIR)/fixtures
 
 .PHONY: clean
 
@@ -25,5 +27,8 @@ test: typescript
 run: typescript
 	node $(OUTDIR)/subway.js
 
-fixtures: fixtures/**/*.js
-	$(ESBUILD) --bundle fixtures/a/index.js --outdir=fixtures/a/dist --minify --sourcemap
+fixtures: $(FIXTURESDIR)/**/*.js
+	$(ESBUILD) --bundle $(FIXTURESDIR)/a/index.js --outdir=$(FIXTURESDIR)/a/dist --minify --sourcemap
+
+check-fixtures: fixtures
+	git diff --exit-code
