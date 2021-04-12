@@ -1,4 +1,4 @@
-# Subway: Tree shaking at the edge
+# Subway: Using feature flags to perform dead code elimination at the edge
 
 ### The problem
 
@@ -32,7 +32,7 @@ We can do something similar here. By doing enough
    1. Finding the location of the “flags” code
    2. Finding all usages of the “flags” code
    3. Pre-computing each of the options for removal
-   4. Pre-calculating the dependency graph of “parts” for tree shaking
+   4. Pre-calculating the dependency graph of “parts” for dead code elimination
 2. **Operate on minified source code.** There's no time to minify at the edge!
 3. **Produce sane source maps.** This will be a nightmare to debug if the sourcemaps are broken
 
@@ -45,17 +45,17 @@ We can do something similar here. By doing enough
 - The “bundle space” is very sparse
 - Options:
    - Build the N most common combinations of bundles
-   - Do tree shaking at the edge
-- Tree shaking source code is “easy”:
+   - Do dead code elimination (DCE) at the edge
+- DCE of source code is “easy”:
    - Operate on un-minified source code
    - Operate on un-bundled source code
    - Time constraints aren’t as strict
-- Tree shaking “at the edge” is much harder:
+- DCE “at the edge” is much harder:
    - Need to operate on minified, bundled source (since there is no time to bundle + minify!)
 - Source maps to the rescue?
    - Source maps are a function from output → source `f(sourcemap, output) → source code`
    - Apply transformations to source, use source map to find transformations for output?
-- Tree shaking approaches:
+- DCE approaches:
    - Process minified source into “parts”
    - Reference count parts
    - When a “part” is dropped, decrement the reference counter for another part
